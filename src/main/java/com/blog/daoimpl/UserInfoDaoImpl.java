@@ -66,6 +66,50 @@ public class UserInfoDaoImpl implements UserInfoDao {
 	    }
 	}
 
+	@Transactional
+	public boolean changePassword(int userId, String currentPassword, String newPassword) {
+	    if (currentPassword == null || newPassword == null) {
+	        return false;
+	    }
+	    try {
+	        UserInfo user = hTemplate.get(UserInfo.class, userId);
+	        if (user == null || user.getPassword() == null) {
+	            return false;
+	        }
+	        String storedPassword = user.getPassword();
+	        boolean matches = isBCryptHash(storedPassword)
+	                ? passwordEncoder.matches(currentPassword, storedPassword)
+	                : storedPassword.equals(currentPassword);
+	        if (!matches) {
+	            return false;
+	        }
+	        user.setPassword(passwordEncoder.encode(newPassword));
+	        hTemplate.update(user);
+	        return true;
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return false;
+	    }
+	}
+
+	@Transactional(readOnly = true)
+	public boolean isEmailUsedByAnotherUser(String email, int userId) {
+	    try {
+	        Long count = hTemplate.execute(session -> {
+	            Query<Long> query = session.createQuery(
+	                    "select count(u.id) from UserInfo u where lower(u.email) = lower(:email) and u.id <> :id",
+	                    Long.class);
+	            query.setParameter("email", email);
+	            query.setParameter("id", userId);
+	            return query.uniqueResult();
+	        });
+	        return count != null && count > 0;
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return true;
+	    }
+	}
+
 	public String encodePassword(String rawPassword) {
 	    return passwordEncoder.encode(rawPassword);
 	}
