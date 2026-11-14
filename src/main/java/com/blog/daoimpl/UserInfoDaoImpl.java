@@ -53,13 +53,8 @@ public class UserInfoDaoImpl implements UserInfoDao {
 	            return passwordEncoder.matches(password, storedPassword) ? user : null;
 	        }
 
-	        // Upgrade existing plaintext credentials at the next successful login.
-	        if (storedPassword.equals(password)) {
-	            user.setPassword(passwordEncoder.encode(password));
-	            hTemplate.update(user);
-	            return user;
-	        }
-	        return null;
+	        // Plain-text accounts are retained as entered for this local project.
+	        return storedPassword.equals(password) ? user : null;
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	        return null;
@@ -83,7 +78,7 @@ public class UserInfoDaoImpl implements UserInfoDao {
 	        if (!matches) {
 	            return false;
 	        }
-	        user.setPassword(passwordEncoder.encode(newPassword));
+	        user.setPassword(newPassword);
 	        hTemplate.update(user);
 	        return true;
 	    } catch (Exception e) {
@@ -110,10 +105,6 @@ public class UserInfoDaoImpl implements UserInfoDao {
 	    }
 	}
 
-	public String encodePassword(String rawPassword) {
-	    return passwordEncoder.encode(rawPassword);
-	}
-
 	private boolean isBCryptHash(String password) {
 	    return password.startsWith("$2a$") || password.startsWith("$2b$") || password.startsWith("$2y$");
 	}
@@ -124,7 +115,6 @@ public class UserInfoDaoImpl implements UserInfoDao {
 	@Transactional
 	public boolean addUser(UserInfo u) {
 		try {
-			u.setPassword(passwordEncoder.encode(u.getPassword()));
 			hTemplate.save(u);
 			return true;
 		} catch (Exception e) {
@@ -140,9 +130,6 @@ public class UserInfoDaoImpl implements UserInfoDao {
 	public boolean updateUser(UserInfo u) {
 	
      try {
-		   if (u.getPassword() != null && !isBCryptHash(u.getPassword())) {
-		       u.setPassword(passwordEncoder.encode(u.getPassword()));
-		   }
 		   hTemplate.update(u);
 		   return true;
 	} catch (Exception e) {

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import javax.servlet.http.HttpSession;
 
 import com.blog.dao.CommentDao;
 import com.blog.daoimpl.PostDaoImpl;
@@ -73,6 +74,7 @@ public class PostController {
             @RequestParam("content") String content,
             @RequestParam("category") String category,
             @RequestParam(value = "media", required = false) MultipartFile file,
+            HttpSession session,
             Model model) {
 
         try {
@@ -83,6 +85,12 @@ public class PostController {
             p.setTitle(title);
             p.setContent(content);
             p.setCategory(category);
+            Object userId = session.getAttribute("userId");
+            if (!(userId instanceof Integer) || ((Integer) userId) <= 0) {
+                return "redirect:/login";
+            }
+            p.setAuthor(new com.blog.pojo.UserInfo());
+            p.getAuthor().setId((Integer) userId);
 
 
             // =================================================

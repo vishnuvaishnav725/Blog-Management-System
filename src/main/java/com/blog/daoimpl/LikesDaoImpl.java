@@ -1,6 +1,11 @@
 package com.blog.daoimpl;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import javax.transaction.Transactional;
 
@@ -138,5 +143,42 @@ public class LikesDaoImpl {
             e.printStackTrace();
             return 0;
         }
+    }
+
+    @Transactional
+    public Set<Integer> getLikedPostIds(int userId, List<Integer> postIds) {
+        if (userId <= 0 || postIds == null || postIds.isEmpty()) return new HashSet<>();
+        try {
+            List<Integer> ids = hTemplate.execute(session -> {
+                Query<Integer> query = session.createQuery(
+                        "select l.pId from Likes l where l.userId = :uid and l.pId in (:postIds)", Integer.class);
+                query.setParameter("uid", userId);
+                query.setParameterList("postIds", postIds);
+                return query.list();
+            });
+            return ids == null ? new HashSet<>() : new HashSet<>(ids);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new HashSet<>();
+        }
+    }
+
+    @Transactional
+    public Map<Integer, Integer> getLikeCounts(List<Integer> postIds) {
+        Map<Integer, Integer> counts = new HashMap<>();
+        if (postIds == null || postIds.isEmpty()) return counts;
+        try {
+            List<Object[]> rows = hTemplate.execute(session -> {
+                Query<Object[]> query = session.createQuery(
+                        "select l.pId, count(l.id) from Likes l where l.pId in (:postIds) group by l.pId",
+                        Object[].class);
+                query.setParameterList("postIds", postIds);
+                return query.list();
+            });
+            if (rows != null) for (Object[] row : rows) counts.put((Integer) row[0], ((Number) row[1]).intValue());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return counts;
     }
 }

@@ -26,6 +26,7 @@
 <value>com.blog.pojo.Post</value>
 <value>com.blog.pojo.Comment</value>
 <value>com.blog.pojo.Likes</value>
+<value>com.blog.pojo.Follow</value>
 </list>
 </property>
 </bean>

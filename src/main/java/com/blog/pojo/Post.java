@@ -7,6 +7,13 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.ManyToOne;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.PrePersist;
+import java.util.Date;
 
 @Entity
 @Table(name="posts")
@@ -22,6 +29,15 @@ public class Post {
     
     @Column(name="like_count")
     private int likeCount;
+
+    // Nullable so posts created before the live-feed module remain readable.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id", referencedColumnName = "id", nullable = true)
+    private UserInfo author;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "created_at")
+    private Date createdAt;
 
 	public Post() {
 		super();
@@ -84,6 +100,19 @@ public class Post {
 
 	public void setLikeCount(int likeCount) {
 		this.likeCount = likeCount;
+	}
+
+	public UserInfo getAuthor() { return author; }
+
+	public void setAuthor(UserInfo author) { this.author = author; }
+
+	public Date getCreatedAt() { return createdAt; }
+
+	public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
+
+	@PrePersist
+	protected void setCreatedAtIfMissing() {
+		if (createdAt == null) createdAt = new Date();
 	}
 
 	@Override

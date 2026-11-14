@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.blog.daoimpl.PostDaoImpl;
 import com.blog.daoimpl.UserInfoDaoImpl;
@@ -65,6 +66,7 @@ public class LoginController {
            
             if (user.isBlocked()) {
                 m.addAttribute("msg", "Your account is blocked by admin.");
+                m.addAttribute("email", email);
                 return "login"; 
             }
 
@@ -85,6 +87,7 @@ public class LoginController {
 
         } else {
             m.addAttribute("msg", "Invalid Email or Password");
+            m.addAttribute("email", email);
             return "login";
         }
     }
@@ -92,21 +95,22 @@ public class LoginController {
    
 
     @RequestMapping(value = "/checkUser", method = RequestMethod.POST)
-    public String checkUserCredential(UserInfo u, Model m, HttpServletRequest request) {
+    public String checkUserCredential(UserInfo u, Model m, HttpServletRequest request,
+                                      RedirectAttributes redirectAttributes) {
 
         UserInfo user = daoimpl.checkUserCredential(u.getEmail(), u.getPassword());
         System.out.println(user);
 
         
         if (user == null) {
-            m.addAttribute("msg", "Invalid User Credential");
-            return "index";
+            redirectAttributes.addFlashAttribute("msg", "Invalid email or password. Please check your credentials.");
+            return "redirect:/login";
         }
 
         
         if (user.isBlocked()) {
-            m.addAttribute("msg", "Your account is blocked by admin.");
-            return "index";   
+            redirectAttributes.addFlashAttribute("msg", "Your account is blocked by admin.");
+            return "redirect:/login";
         }
 
        
