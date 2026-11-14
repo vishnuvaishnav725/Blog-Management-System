@@ -154,7 +154,8 @@ if(users != null && !users.isEmpty()){
 <div class="user-card">
 
     <div class="user-top">
-        <img src="<%=request.getContextPath()%>/resources/images/<%=u.getDp()!=null?u.getDp():"default-user.png"%>"
+        <% String userDp = u.getDp(); String userDpUrl = (userDp != null && userDp.startsWith("/profile-pictures/")) ? userDp : "/resources/images/" + (userDp != null ? userDp : "default-user.png"); %>
+        <img src="<%=request.getContextPath()%><%=userDpUrl%>"
              class="user-dp"
              onerror="this.onerror=null;this.src='<%=request.getContextPath()%>/resources/images/default-user.png';">
         <div>
