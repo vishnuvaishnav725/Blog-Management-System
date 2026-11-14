@@ -186,7 +186,6 @@ public class LoginController {
     public String addUser(@RequestParam("dp") MultipartFile file,
                           @RequestParam("email") String email,
                           @RequestParam("password") String password,
-                          @RequestParam("role") String role,
                           @RequestParam("username") String username, Model m) throws Exception {
 
         UserInfo u = new UserInfo();
@@ -197,7 +196,7 @@ public class LoginController {
         file.transferTo(serverfile);
         u.setEmail(email);
         u.setPassword(password);
-        u.setRole(role);
+        u.setRole("user");
         u.setUsername(username);
 
         if (daoimpl.addUser(u)) {
@@ -230,28 +229,18 @@ public class LoginController {
         return "home";
     }
 
-    @GetMapping("/deleteUser")
-    public String deleteUser(@RequestParam("id") int id, Model m) throws Exception {
-        UserInfo u = daoimpl.getUserById(id);
-
-        u.setId(id);
-
-        boolean Status = daoimpl.deleteUser(id);
-        if (Status) {
-            m.addAttribute("msg", "User Deleted Successfully");
-        } else {
-            m.addAttribute("msg", "User Could not be Deleted");
-        }
-        return "manageUsers";
-    }
-
     @PostMapping("/login/getUser")
     public String getUserById(@RequestParam("id") int id,
                               @RequestParam("dp") MultipartFile file,
                               @RequestParam("email") String email,
                               @RequestParam("password") String password,
                               @RequestParam("role") String role,
-                              @RequestParam("username") String username, Model m) throws Exception {
+                              @RequestParam("username") String username, Model m,
+                              HttpSession session) throws Exception {
+
+        if (!isAdmin(session)) {
+            return "redirect:/login";
+        }
 
         UserInfo u = daoimpl.getUserById(id);
 
@@ -275,8 +264,16 @@ public class LoginController {
         return "updateUser";
     }
 
+    private boolean isAdmin(HttpSession session) {
+        UserInfo currentUser = session == null ? null : (UserInfo) session.getAttribute("currentUser");
+        return currentUser != null && "admin".equalsIgnoreCase(currentUser.getRole());
+    }
+
     @GetMapping("/loginUsers")
-    public String getAllUsers(Model m) {
+    public String getAllUsers(Model m, HttpSession session) {
+        if (!isAdmin(session)) {
+            return "redirect:/login";
+        }
         List<UserInfo> list = daoimpl.getAllUser();
         m.addAttribute("users", list);
         return "allUsers";
