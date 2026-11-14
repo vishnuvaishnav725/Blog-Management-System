@@ -266,10 +266,6 @@ input:focus,select:focus{
           <label>Username</label>
           <input type="text" name="username" required>
         </div>
-        <div class="field" style="width:140px">
-          <label>Role</label>
-          <input type="text" name="role" required>
-        </div>
       </div>
 
       <div class="field">
