@@ -326,12 +326,13 @@ body::before {
   <div class="sidebar">
       <%
           String dp = (String) session.getAttribute("dp");
+          String dpUrl = (dp != null && dp.startsWith("/profile-pictures/")) ? dp : "/resources/images/" + (dp != null ? dp : "default-user.png");
           String username = (String) session.getAttribute("username");
       %>
 
       <div class="dp">
           <% if (dp != null) { %>
-              <img src="<%= request.getContextPath() %>/resources/images/<%= dp %>" alt="dp">
+              <img src="<%= request.getContextPath() %><%= dpUrl %>" alt="dp">
           <% } else { %>
               <div class="dp-fallback"><%= (username != null && username.length() > 0) ? ("" + Character.toUpperCase(username.charAt(0))) : "U" %></div>
           <% } %>
