@@ -1,5 +1,12 @@
 <%@page import="com.blog.pojo.UserInfo"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%!
+private String html(String value) {
+    if (value == null) return "";
+    return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                .replace("\\\"", "&quot;").replace("\\'", "&#39;");
+}
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,16 +38,16 @@ String error = (String) request.getAttribute("error");
 <img class="avatar" src="<%=request.getContextPath()%><%=photoUrl%>" alt="Profile picture">
 <div class="heading"><h1>User Profile Management</h1><p>Update your account details, profile picture, and password.</p></div>
 </div>
-<% if (msg != null) { %><div class="msg"><%=msg%></div><% } %>
-<% if (error != null) { %><div class="error"><%=error%></div><% } %>
+<% if (msg != null) { %><div class="msg"><%=html(msg)%></div><% } %>
+<% if (error != null) { %><div class="error"><%=html(error)%></div><% } %>
 <div class="grid">
 <section class="card">
 <h2>Profile details</h2><p class="sub">Change your username and email address.</p>
 <form action="<%=request.getContextPath()%>/updateUserProfile" method="post" autocomplete="on">
 <label for="username">Username</label>
-<input id="username" type="text" name="username" value="<%=u.getUsername()%>" minlength="2" maxlength="40" required>
+<input id="username" type="text" name="username" value="<%=html(u.getUsername())%>" minlength="2" maxlength="40" required>
 <label for="email">Email</label>
-<input id="email" type="email" name="email" value="<%=u.getEmail()%>" maxlength="254" required>
+<input id="email" type="email" name="email" value="<%=html(u.getEmail())%>" maxlength="254" required>
 <div class="actions"><button type="submit">Save profile</button><a class="back" href="<%=request.getContextPath()%>/home">Back to home</a></div>
 </form>
 </section>
