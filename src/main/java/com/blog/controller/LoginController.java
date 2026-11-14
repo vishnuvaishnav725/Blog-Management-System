@@ -158,20 +158,6 @@ public class LoginController {
     }
 
 
-    @GetMapping("/editProfile")
-    public String editProfile(Model m, HttpServletRequest request) {
-
-        HttpSession session = request.getSession(false);
-        int id = (int) session.getAttribute("id");
-        System.out.println("Id = " + id);
-        UserInfo user = daoimpl.getUserById(id);
-
-        if (user != null) {
-            session.setAttribute("user", user);
-        }
-        return "editProfile";
-    }
-
     @PostMapping("/reg")
     public String regPage() {
         return "reg";
@@ -206,27 +192,6 @@ public class LoginController {
             m.addAttribute("msg", "User Could Not Be Register / Already Exists");
             return "reg";
         }
-    }
-
-    @PostMapping("/updateUserProfile")
-    public String updateUser(@RequestParam("username") String username, Model m,
-                             @RequestParam("email") String email,
-                             @RequestParam("password") String password,
-                             HttpServletRequest request) throws Exception {
-
-        HttpSession session = request.getSession(false);
-        UserInfo u = (UserInfo) session.getAttribute("user");
-        u.setUsername(username);
-        u.setEmail(email);
-        u.setPassword(password);
-
-        boolean Status = daoimpl.updateUser(u);
-        if (Status) {
-            m.addAttribute("msg", "User Profile Updated Successfully");
-        } else {
-            m.addAttribute("msg", "User Profile Could not be Updated");
-        }
-        return "home";
     }
 
     @PostMapping("/login/getUser")
