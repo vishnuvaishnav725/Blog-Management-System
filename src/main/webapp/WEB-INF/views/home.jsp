@@ -345,6 +345,7 @@ body::before {
         <a href="editProfile">Edit Profile</a>
         <a href="post">Blog</a>
         <a href="liveFeed">Live Social Feed</a>
+        <a href="chat">Private Messages</a>
         <a href="showAllPosts">Show All Posts</a>
         <a href="logout" style="color:#dc2626; font-weight:800;">
         Logout

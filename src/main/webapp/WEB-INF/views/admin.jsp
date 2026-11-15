@@ -177,6 +177,12 @@
             <a href="ManageUsers">Manage Users →</a>
         </div>
 
+        <div class="box">
+            <div class="box-icon">DM</div>
+            <div class="box-title">Private Messages</div>
+            <div class="box-desc">Open one-to-one conversations with registered users.</div>
+            <a href="chat">Open Messages</a>
+        </div>
         <!-- ✅ Attractive Back To Home Page Link -->
         <a href="home" class="back-home">⬅ Back To Home Page</a>
 
