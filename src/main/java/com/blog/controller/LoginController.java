@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.blog.daoimpl.PostDaoImpl;
 import com.blog.daoimpl.UserInfoDaoImpl;
@@ -65,6 +66,7 @@ public class LoginController {
            
             if (user.isBlocked()) {
                 m.addAttribute("msg", "Your account is blocked by admin.");
+                m.addAttribute("email", email);
                 return "login"; 
             }
 
@@ -85,6 +87,7 @@ public class LoginController {
 
         } else {
             m.addAttribute("msg", "Invalid Email or Password");
+            m.addAttribute("email", email);
             return "login";
         }
     }
@@ -92,21 +95,22 @@ public class LoginController {
    
 
     @RequestMapping(value = "/checkUser", method = RequestMethod.POST)
-    public String checkUserCredential(UserInfo u, Model m, HttpServletRequest request) {
+    public String checkUserCredential(UserInfo u, Model m, HttpServletRequest request,
+                                      RedirectAttributes redirectAttributes) {
 
         UserInfo user = daoimpl.checkUserCredential(u.getEmail(), u.getPassword());
         System.out.println(user);
 
         
         if (user == null) {
-            m.addAttribute("msg", "Invalid User Credential");
-            return "index";
+            redirectAttributes.addFlashAttribute("msg", "Invalid email or password. Please check your credentials.");
+            return "redirect:/login";
         }
 
         
         if (user.isBlocked()) {
-            m.addAttribute("msg", "Your account is blocked by admin.");
-            return "index";   
+            redirectAttributes.addFlashAttribute("msg", "Your account is blocked by admin.");
+            return "redirect:/login";
         }
 
        
@@ -158,20 +162,6 @@ public class LoginController {
     }
 
 
-    @GetMapping("/editProfile")
-    public String editProfile(Model m, HttpServletRequest request) {
-
-        HttpSession session = request.getSession(false);
-        int id = (int) session.getAttribute("id");
-        System.out.println("Id = " + id);
-        UserInfo user = daoimpl.getUserById(id);
-
-        if (user != null) {
-            session.setAttribute("user", user);
-        }
-        return "editProfile";
-    }
-
     @PostMapping("/reg")
     public String regPage() {
         return "reg";
@@ -186,7 +176,6 @@ public class LoginController {
     public String addUser(@RequestParam("dp") MultipartFile file,
                           @RequestParam("email") String email,
                           @RequestParam("password") String password,
-                          @RequestParam("role") String role,
                           @RequestParam("username") String username, Model m) throws Exception {
 
         UserInfo u = new UserInfo();
@@ -197,7 +186,7 @@ public class LoginController {
         file.transferTo(serverfile);
         u.setEmail(email);
         u.setPassword(password);
-        u.setRole(role);
+        u.setRole("user");
         u.setUsername(username);
 
         if (daoimpl.addUser(u)) {
@@ -209,49 +198,18 @@ public class LoginController {
         }
     }
 
-    @PostMapping("/updateUserProfile")
-    public String updateUser(@RequestParam("username") String username, Model m,
-                             @RequestParam("email") String email,
-                             @RequestParam("password") String password,
-                             HttpServletRequest request) throws Exception {
-
-        HttpSession session = request.getSession(false);
-        UserInfo u = (UserInfo) session.getAttribute("user");
-        u.setUsername(username);
-        u.setEmail(email);
-        u.setPassword(password);
-
-        boolean Status = daoimpl.updateUser(u);
-        if (Status) {
-            m.addAttribute("msg", "User Profile Updated Successfully");
-        } else {
-            m.addAttribute("msg", "User Profile Could not be Updated");
-        }
-        return "home";
-    }
-
-    @GetMapping("/deleteUser")
-    public String deleteUser(@RequestParam("id") int id, Model m) throws Exception {
-        UserInfo u = daoimpl.getUserById(id);
-
-        u.setId(id);
-
-        boolean Status = daoimpl.deleteUser(id);
-        if (Status) {
-            m.addAttribute("msg", "User Deleted Successfully");
-        } else {
-            m.addAttribute("msg", "User Could not be Deleted");
-        }
-        return "manageUsers";
-    }
-
     @PostMapping("/login/getUser")
     public String getUserById(@RequestParam("id") int id,
                               @RequestParam("dp") MultipartFile file,
                               @RequestParam("email") String email,
                               @RequestParam("password") String password,
                               @RequestParam("role") String role,
-                              @RequestParam("username") String username, Model m) throws Exception {
+                              @RequestParam("username") String username, Model m,
+                              HttpSession session) throws Exception {
+
+        if (!isAdmin(session)) {
+            return "redirect:/login";
+        }
 
         UserInfo u = daoimpl.getUserById(id);
 
@@ -275,8 +233,16 @@ public class LoginController {
         return "updateUser";
     }
 
+    private boolean isAdmin(HttpSession session) {
+        UserInfo currentUser = session == null ? null : (UserInfo) session.getAttribute("currentUser");
+        return currentUser != null && "admin".equalsIgnoreCase(currentUser.getRole());
+    }
+
     @GetMapping("/loginUsers")
-    public String getAllUsers(Model m) {
+    public String getAllUsers(Model m, HttpSession session) {
+        if (!isAdmin(session)) {
+            return "redirect:/login";
+        }
         List<UserInfo> list = daoimpl.getAllUser();
         m.addAttribute("users", list);
         return "allUsers";

@@ -33,6 +33,7 @@ public class CommentController {
     @PostMapping("/comment")
     public String addComment(@RequestParam("postId") Integer postId,
                              @RequestParam("comment_text") String commentText,
+                             @RequestParam(value = "returnTo", required = false) String returnTo,
                              HttpSession session,
                              Model m) throws Exception {
 
@@ -64,7 +65,7 @@ public class CommentController {
         boolean saved = daoimpl.addComment(c);
 
         if (saved) {
-          
+            if ("liveFeed".equals(returnTo)) return "redirect:/liveFeed";
             return "redirect:/showAllPosts";
         } else {
             m.addAttribute("msg", "comment could not be done");

@@ -1,0 +1,4 @@
+# Copy to %USERPROFILE%\.blogger\database.properties and set your local values.
+db.url=jdbc:mysql://localhost:3306/site
+db.username=root
+db.password=CHANGE_ME

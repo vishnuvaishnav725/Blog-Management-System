@@ -92,9 +92,24 @@ public class PostDaoImpl  implements PostDao{
 	 @Override
 	             
 	    public List<Post> getAllPosts() {
+	        return getFeedPosts(0, false);
+	    }
+
+	    @Override
+	    @Transactional(readOnly = true)
+	    public List<Post> getFeedPosts(int userId, boolean followedOnly) {
 	        try {
-	            List<Post> posts = hTemplate.loadAll(Post.class);
-	           return posts;
+	            return hTemplate.execute(session -> {
+	                String hql = followedOnly
+	                    ? "select p from Post p join fetch p.author a "
+	                        + "where a.id in (select f.followedId from Follow f where f.followerId = :userId) "
+	                        + "order by p.createdAt desc, p.pId desc"
+	                    : "select p from Post p left join fetch p.author "
+	                        + "order by p.createdAt desc, p.pId desc";
+	                org.hibernate.query.Query<Post> query = session.createQuery(hql, Post.class);
+	                if (followedOnly) query.setParameter("userId", userId);
+	                return query.list();
+	            });
 	        } catch (Exception e) {
 	            e.printStackTrace();                    
 	            return null;

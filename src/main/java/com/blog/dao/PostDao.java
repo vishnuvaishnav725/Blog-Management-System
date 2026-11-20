@@ -11,6 +11,7 @@ public interface PostDao {
 	boolean deletePost(int pId);
 	Post getPostById(int pId);
 	List<Post>getAllPosts();
+	List<Post> getFeedPosts(int userId, boolean followedOnly);
 	
 	
 

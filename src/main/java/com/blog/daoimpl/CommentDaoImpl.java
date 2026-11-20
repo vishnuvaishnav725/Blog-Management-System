@@ -1,6 +1,7 @@
 package com.blog.daoimpl;
 
 import java.util.List;
+import java.util.ArrayList;
 
 import javax.transaction.Transactional;
 
@@ -72,6 +73,23 @@ public class CommentDaoImpl implements CommentDao {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    @Transactional
+    public List<Comment> getCommentsForPosts(List<Integer> postIds) {
+        if (postIds == null || postIds.isEmpty()) return new ArrayList<>();
+        try {
+            return hTemplate.execute(session -> {
+                org.hibernate.query.Query<Comment> query = session.createQuery(
+                        "select c from Comment c join fetch c.user where c.post.pId in (:postIds) order by c.id desc",
+                        Comment.class);
+                query.setParameterList("postIds", postIds);
+                return query.list();
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
         }
     }
 
